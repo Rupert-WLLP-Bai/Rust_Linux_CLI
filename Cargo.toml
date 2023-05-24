@@ -1,0 +1,28 @@
+[package]
+name = "rust_linux_cli"
+version = "0.1.0"
+edition = "2021"
+
+[[bin]]
+name = "ls"
+path = "commands/ls/src/main.rs"
+
+[[bin]]
+name = "cat"
+path = "commands/cat/src/main.rs"
+
+[workspace]
+members = [
+    "commands/ls",
+    "commands/cat",
+]
+
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+ls = { path = "commands/ls" }
+cat = { path = "commands/cat" }
+clap = "3.2.22"
+nom = "7.1.1"
+chrono = "0.4.19"

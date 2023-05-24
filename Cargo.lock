@@ -41,6 +41,10 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a3e2c3daef883ecc1b5d58c15adae93470a91d425f3532ba1695849656af3fc1"
 
 [[package]]
+name = "cat"
+version = "0.1.0"
+
+[[package]]
 name = "cc"
 version = "1.0.79"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -170,6 +174,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "ls"
+version = "0.1.0"
+dependencies = [
+ "chrono",
+ "clap",
+ "nom",
+]
+
+[[package]]
 name = "memchr"
 version = "2.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -241,11 +254,13 @@ dependencies = [
 ]
 
 [[package]]
-name = "rust_ls"
+name = "rust_linux_cli"
 version = "0.1.0"
 dependencies = [
+ "cat",
  "chrono",
  "clap",
+ "ls",
  "nom",
 ]
 
