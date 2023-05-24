@@ -25,16 +25,18 @@
 //!
 //! 作者：BJH
 //! 日期：2023.05.24
-//! 版本：0.1.0
+//! 版本：0.1.1
+//! 更新记录: 加入了颜色输出功能
 
-use std::fs;
+use chrono::prelude::*;
+use chrono::Local;
 use clap::{App, Arg};
-#[cfg(windows)]
-use std::os::windows::fs::MetadataExt;
+use colored::*;
+use std::fs;
 #[cfg(not(windows))]
 use std::os::unix::fs::PermissionsExt;
-use chrono::Local;
-use chrono::prelude::*;
+#[cfg(windows)]
+use std::os::windows::fs::MetadataExt;
 
 /// 主函数
 pub fn main() {
@@ -43,7 +45,12 @@ pub fn main() {
         .arg(Arg::new("path").default_value(".").index(1))
         .arg(Arg::new("long").short('l').help("使用长格式列表"))
         .arg(Arg::new("all").short('a').help("不忽略以'.'开头的条目"))
-        .arg(Arg::new("human-readable").short('h').help("以人类可读的文件大小显示"))
+        .arg(
+            Arg::new("human-readable")
+                .short('h')
+                .help("以人类可读的文件大小显示"),
+        )
+        .arg(Arg::new("color").long("color").help("启用颜色输出"))
         .get_matches();
 
     // 获取命令行参数
@@ -51,6 +58,7 @@ pub fn main() {
     let show_hidden = matches.is_present("all");
     let show_long_format = matches.is_present("long");
     let show_human_readable = matches.is_present("human-readable");
+    let use_color = matches.is_present("color");
 
     // 获取目录项列表
     let mut entries = list_directory(path, show_hidden);
@@ -106,11 +114,49 @@ pub fn main() {
 
     entries.sort();
 
+    // 打印目录项列表
     for entry in entries {
         if show_long_format {
-            println!("{}", entry.long_format);
+            if use_color {
+                let file_type = fs::metadata(&entry.path)
+                    .map(|metadata| metadata.file_type().is_dir())
+                    .unwrap_or(false);
+
+                let permissions = if file_type {
+                    entry.permissions.blue().to_string()
+                } else {
+                    entry.permissions.red().to_string()
+                };
+
+                let formatted_time = entry.formatted_time.green().to_string();
+                let size_string = entry.size_string.yellow().to_string();
+                let file_name = entry.file_name.bright_white().to_string();
+
+                let long_format = format!(
+                    "{} {} {} {}",
+                    permissions, formatted_time, size_string, file_name
+                );
+
+                println!("{}", long_format);
+            } else {
+                println!("{}", entry.long_format);
+            }
         } else {
-            println!("{}", entry.file_name);
+            if use_color {
+                let file_type = fs::metadata(&entry.path)
+                    .map(|metadata| metadata.file_type().is_dir())
+                    .unwrap_or(false);
+
+                let file_name = if file_type {
+                    entry.file_name.blue().bold().to_string()
+                } else {
+                    entry.file_name.bright_white().to_string()
+                };
+
+                println!("{}", file_name);
+            } else {
+                println!("{}", entry.file_name);
+            }
         }
     }
 }

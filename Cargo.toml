@@ -26,3 +26,4 @@ cat = { path = "commands/cat" }
 clap = "3.2.22"
 nom = "7.1.1"
 chrono = "0.4.19"
+colored = "2.0.0"
