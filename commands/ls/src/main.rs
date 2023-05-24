@@ -30,33 +30,20 @@
 use std::fs;
 use clap::{App, Arg};
 #[cfg(windows)]
-use std::os::windows::fs::MetadataExt; // 仅适用于Windows
+use std::os::windows::fs::MetadataExt;
 #[cfg(not(windows))]
-use std::os::unix::fs::PermissionsExt; // 仅适用于非Windows
+use std::os::unix::fs::PermissionsExt;
 use chrono::Local;
 use chrono::prelude::*;
-
 
 /// 主函数
 pub fn main() {
     // 创建命令行解析器
     let matches = App::new("ls")
         .arg(Arg::new("path").default_value(".").index(1))
-        .arg(
-            Arg::new("long")
-                .short('l')
-                .help("使用长格式列表"),
-        )
-        .arg(
-            Arg::new("all")
-                .short('a')
-                .help("不忽略以'.'开头的条目"),
-        )
-        .arg(
-            Arg::new("human-readable")
-                .short('h')
-                .help("以人类可读的文件大小显示"),
-        )
+        .arg(Arg::new("long").short('l').help("使用长格式列表"))
+        .arg(Arg::new("all").short('a').help("不忽略以'.'开头的条目"))
+        .arg(Arg::new("human-readable").short('h').help("以人类可读的文件大小显示"))
         .get_matches();
 
     // 获取命令行参数
@@ -70,6 +57,9 @@ pub fn main() {
 
     if show_long_format {
         // 遍历目录项并获取详细信息
+        let mut max_permissions = 0;
+        let mut max_size = 0;
+
         for entry in &mut entries {
             let metadata = fs::metadata(&entry.path).unwrap();
 
@@ -77,6 +67,7 @@ pub fn main() {
             let permissions = metadata.file_attributes().to_string();
             #[cfg(not(windows))]
             let permissions = format!("{:#o}", metadata.permissions().mode() & 0o7777);
+            entry.permissions = permissions.clone();
 
             let modified_time = metadata.modified().unwrap();
             let formatted_time = Local
@@ -84,15 +75,32 @@ pub fn main() {
                 .unwrap()
                 .format("%b %e %H:%M")
                 .to_string();
+            entry.formatted_time = formatted_time.clone();
 
             let size = metadata.len();
-            let size_string = if show_human_readable {
-                human_readable_size(size)
-            } else {
-                size.to_string()
-            };
+            entry.size = size;
 
-            entry.long_format = format!("{:>10} {} {} {}", permissions, formatted_time, size_string, entry.file_name);
+            if permissions.len() > max_permissions {
+                max_permissions = permissions.len();
+            }
+            if size.to_string().len() > max_size {
+                max_size = size.to_string().len();
+            }
+        }
+
+        for entry in &mut entries {
+            entry.permissions = format!("{:width$}", entry.permissions, width = max_permissions);
+            entry.formatted_time = format!("{:width$}", entry.formatted_time, width = 12);
+            entry.size_string = if show_human_readable {
+                human_readable_size(entry.size)
+            } else {
+                entry.size.to_string()
+            };
+            entry.size_string = format!("{:width$}", entry.size_string, width = max_size);
+            entry.long_format = format!(
+                "{} {} {} {}",
+                entry.permissions, entry.formatted_time, entry.size_string, entry.file_name
+            );
         }
     }
 
@@ -113,6 +121,10 @@ struct DirectoryEntry {
     file_name: String,
     long_format: String,
     path: std::path::PathBuf,
+    permissions: String,
+    formatted_time: String,
+    size: u64,
+    size_string: String,
 }
 
 /// 获取目录项列表
@@ -132,6 +144,10 @@ fn list_directory(path: &str, show_hidden: bool) -> Vec<DirectoryEntry> {
                 file_name,
                 long_format: "".to_owned(),
                 path,
+                permissions: "".to_owned(),
+                formatted_time: "".to_owned(),
+                size: 0,
+                size_string: "".to_owned(),
             })
         })
         .filter_map(|x| x)
@@ -144,7 +160,7 @@ fn list_directory(path: &str, show_hidden: bool) -> Vec<DirectoryEntry> {
 
 /// 将文件大小转换为人类可读格式
 fn human_readable_size(size: u64) -> String {
-    let units = [" B", "KB", "MB", "GB", "TB", "PB"];   // 为了对齐, 将单位的宽度设置为 2
+    let units = [" B", "KB", "MB", "GB", "TB", "PB"];
     let mut size = size as f64;
     let mut unit_index = 0;
 
@@ -152,6 +168,6 @@ fn human_readable_size(size: u64) -> String {
         size /= 1024.0;
         unit_index += 1;
     }
-    // FIXME: 将输出对齐, 最长的输出是 1000.0 PB, 需要 9 个字符的宽度
+
     format!("{:>5.1} {}", size, units[unit_index])
 }
