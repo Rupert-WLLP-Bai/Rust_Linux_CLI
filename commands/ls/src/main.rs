@@ -163,7 +163,7 @@ pub fn main() {
 
 /// 目录项结构体
 #[derive(Ord, PartialEq, Eq, PartialOrd)]
-struct DirectoryEntry {
+pub struct DirectoryEntry {
     file_name: String,
     long_format: String,
     path: std::path::PathBuf,
@@ -174,7 +174,7 @@ struct DirectoryEntry {
 }
 
 /// 获取目录项列表
-fn list_directory(path: &str, show_hidden: bool) -> Vec<DirectoryEntry> {
+pub fn list_directory(path: &str, show_hidden: bool) -> Vec<DirectoryEntry> {
     let mut entries = fs::read_dir(path)
         .expect(format!("无法打开目录: '{}'", path).as_str())
         .map(|entry| {
@@ -205,7 +205,7 @@ fn list_directory(path: &str, show_hidden: bool) -> Vec<DirectoryEntry> {
 }
 
 /// 将文件大小转换为人类可读格式
-fn human_readable_size(size: u64) -> String {
+pub fn human_readable_size(size: u64) -> String {
     let units = [" B", "KB", "MB", "GB", "TB", "PB"];
     let mut size = size as f64;
     let mut unit_index = 0;
@@ -216,4 +216,63 @@ fn human_readable_size(size: u64) -> String {
     }
 
     format!("{:>5.1} {}", size, units[unit_index])
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::fs;
+
+    #[test]
+    fn test_list_directory() {
+        // 删除测试用的文件夹(如果存在的话)
+        // 输出warning信息，可能上一次测试没有成功删除
+        if fs::metadata("ls_test").is_ok() {
+            println!("warning: 上一次测试没有成功删除测试用的文件夹");
+            let remove_result = fs::remove_dir_all("ls_test");
+            assert!(remove_result.is_ok());
+        }
+
+        // 创建测试用的文件夹
+        fs::create_dir("ls_test").unwrap();
+
+        // 在"ls_test"文件夹中创建一个文件
+        fs::File::create("ls_test/test_file.txt").unwrap();
+
+        // 测试list_directory函数的输出是否正确
+        let path = "ls_test";
+        let show_hidden = false;
+        let entries = list_directory(path, show_hidden);
+
+        // 检查目录项数量是否与预期一致
+        assert_eq!(entries.len(), 1);
+
+        // 检查目录项的文件名是否正确
+        assert_eq!(entries[0].file_name, "test_file.txt");
+
+        // 检查目录项的路径是否正确(注意在Windows上的路径分隔符为'\\')
+        #[cfg(windows)]
+        assert_eq!(entries[0].path.to_str().unwrap(), "ls_test\\test_file.txt");
+        #[cfg(not(windows))]
+        assert_eq!(entries[0].path.to_str().unwrap(), "ls_test/test_file.txt");
+
+        // 删除测试用的文件夹(注意检查是否成功删除)
+        let remove_result = fs::remove_dir_all("ls_test");
+        assert!(remove_result.is_ok());
+
+    }
+
+    #[test]
+    fn test_human_readable_size() {
+        // 测试human_readable_size函数的输出是否正确
+        assert_eq!(human_readable_size(0), "  0.0  B");
+        assert_eq!(human_readable_size(1024), "  1.0 KB");
+        assert_eq!(human_readable_size(2048), "  2.0 KB");
+        assert_eq!(human_readable_size(1048576), "  1.0 MB");
+        assert_eq!(human_readable_size(15728640), " 15.0 MB");
+        assert_eq!(human_readable_size(1073741824), "  1.0 GB");
+    }
+
+    // TODO: 编写更多的测试用例
+    // TODO: 将测试用例移动到单独的文件中
 }
