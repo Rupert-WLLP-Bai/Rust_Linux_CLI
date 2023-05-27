@@ -34,9 +34,12 @@ members = [
 ls = { path = "commands/ls" }
 cat = { path = "commands/cat" }
 simple_config = { path = "macro/simple_config" }
+unit_parser = { path = "macro/unit_parser" }
 clap = "3.2.22"
 nom = "7.1.1"
 chrono = "0.4.19"
 colored = "2.0"
 quote = "1.0"
 syn = "2.0"
+ini = "1.3.0"
+serde = { version = "1.0", features = ["derive"] }
