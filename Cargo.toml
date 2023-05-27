@@ -11,10 +11,15 @@ path = "commands/ls/src/main.rs"
 name = "cat"
 path = "commands/cat/src/main.rs"
 
+[[bin]]
+name = "simple_config"
+path = "macro/simple_config/src/main.rs"
+
 [workspace]
 members = [
     "commands/ls",
     "commands/cat",
+    "macro/simple_config"
 ]
 
 
@@ -23,7 +28,10 @@ members = [
 [dependencies]
 ls = { path = "commands/ls" }
 cat = { path = "commands/cat" }
+simple_config = { path = "macro/simple_config" }
 clap = "3.2.22"
 nom = "7.1.1"
 chrono = "0.4.19"
 colored = "2.0.0"
+quote = "1.0.9"
+syn = "1.0.76"
