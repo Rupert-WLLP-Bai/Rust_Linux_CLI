@@ -19,12 +19,19 @@ path = "macro/simple_config/src/main.rs"
 name = "unit_parser"
 path = "macro/unit_parser/src/main.rs"
 
+[[bin]]
+name = "basic"
+path = "confique_demo/basic/src/main.rs"
+
+[[bin]]
+name = "service_section"
+path = "confique_demo/service_section/src/main.rs"
+
 [workspace]
 members = [
-    "commands/ls",
-    "commands/cat",
-    "macro/simple_config",
-    "macro/unit_parser",
+    "commands/*",
+    "macro/*",
+    "confique_demo/*",
 ]
 
 
@@ -35,6 +42,8 @@ ls = { path = "commands/ls" }
 cat = { path = "commands/cat" }
 simple_config = { path = "macro/simple_config" }
 unit_parser = { path = "macro/unit_parser" }
+basic = { path = "confique_demo/basic" }
+service_section = { path = "confique_demo/service_section" }
 clap = "3.2.22"
 nom = "7.1.1"
 chrono = "0.4.19"
@@ -42,4 +51,5 @@ colored = "2.0"
 quote = "1.0"
 syn = "2.0"
 ini = "1.3.0"
+confique = "0.2"
 serde = { version = "1.0", features = ["derive"] }
