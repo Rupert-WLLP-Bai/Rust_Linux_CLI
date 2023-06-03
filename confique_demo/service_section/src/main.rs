@@ -9,8 +9,6 @@
 // [Unit]
 // Description = "OpenSSH server daemon"
 
-use std::fs;
-
 use confique::Config;
 use serde::{Deserialize, Serialize};
 
@@ -98,9 +96,8 @@ struct SocketSection {
 use std::collections::HashMap;
 
 fn convert_systemd_to_toml(systemd: &str) -> String {
-    let mut toml = String::new();
-    let mut current_section = String::new();
-    let mut properties: HashMap<String, Vec<String>> = HashMap::new();
+    let mut toml = HashMap::new();
+    let mut current_section: Option<String> = None;
 
     for line in systemd.lines() {
         let line = line.trim();
@@ -109,50 +106,48 @@ fn convert_systemd_to_toml(systemd: &str) -> String {
             continue;
         }
 
+        // If this is a section header
         if line.starts_with('[') {
-            if !current_section.is_empty() {
-                toml.push_str(&current_section);
-                toml.push('\n');
-                toml.push('\n'); // 添加空行分隔段
-            }
-
-            current_section = line.to_owned();
+            // Trim the square brackets to get the section name
+            let section_name = line.trim_matches(|c| c == '[' || c == ']');
+            current_section = Some(section_name.to_string());
+            toml.insert(current_section.clone().unwrap(), HashMap::new());
             continue;
         }
 
-        let parts: Vec<&str> = line.splitn(2, '=').collect();
-        if parts.len() != 2 {
-            continue;
-        }
-
-        let key = parts[0].trim();
-        let value = parts[1].trim().to_owned();
-
-        let values = properties.entry(key.to_owned()).or_insert_with(Vec::new);
-        values.push(value);
-    }
-
-    if !current_section.is_empty() {
-        toml.push_str(&current_section);
-        toml.push('\n');
-        toml.push('\n'); // 添加最后一个段的空行
-    }
-
-    for (key, values) in properties {
-        toml.push_str(&format!("{} = [", key));
-
-        for (i, value) in values.iter().enumerate() {
-            if i > 0 {
-                toml.push_str(", ");
+        if let Some(section_name) = &current_section {
+            let parts: Vec<&str> = line.splitn(2, '=').collect();
+            if parts.len() != 2 {
+                continue;
             }
-            toml.push_str(&format!("\"{}\"", value));
-        }
 
-        toml.push_str("]\n");
+            let key = parts[0].trim();
+            let value = parts[1].trim().to_owned();
+
+            let section = toml.get_mut(section_name).unwrap();
+            section.entry(key.to_string()).or_insert_with(Vec::new).push(value);
+        }
     }
 
-    toml
+    let mut toml_string = String::new();
+    for (section_name, properties) in toml {
+        toml_string.push_str(&format!("[{}]\n", section_name));
+        for (key, values) in properties {
+            toml_string.push_str(&format!("{} = [", key));
+            for (i, value) in values.iter().enumerate() {
+                if i > 0 {
+                    toml_string.push_str(", ");
+                }
+                toml_string.push_str(&format!("\"{}\"", value));
+            }
+            toml_string.push_str("]\n");
+        }
+        toml_string.push('\n');  // 添加空行分隔段
+    }
+
+    toml_string
 }
+
 
 fn systemd_test_string()->String {
     let systemd = r#"
