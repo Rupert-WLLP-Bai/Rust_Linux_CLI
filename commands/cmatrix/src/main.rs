@@ -75,6 +75,9 @@ fn main() -> Result<()> {
                 let _ = queue!(stdout, terminal::LeaveAlternateScreen, cursor::Show);
                 let _ = stdout.flush();
                 let _ = terminal::disable_raw_mode();
+                // Reset the color of the terminal
+                let _ = queue!(stdout, style::SetForegroundColor(style::Color::Reset));
+                let _ = stdout.flush();
                 exit(0);
             }
         }
