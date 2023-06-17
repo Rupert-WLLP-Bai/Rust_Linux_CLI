@@ -83,6 +83,23 @@ fn main() -> Result<()> {
         }
     });
 
+    // FIXME: Handle the Ctrl+C signal
+    let running_ctrl_c = running.clone();
+    let shared_stdout_ctrl_c = shared_stdout.clone();
+    ctrlc::set_handler(move || {
+        running_ctrl_c.store(false, Ordering::SeqCst);
+        let mut stdout = shared_stdout_ctrl_c.lock().unwrap();
+        // Cleanup and exit
+        let _ = terminal::disable_raw_mode();
+        let _ = queue!(stdout, terminal::LeaveAlternateScreen, cursor::Show);
+        let _ = stdout.flush();
+        let _ = terminal::disable_raw_mode();
+        // Reset the color of the terminal
+        let _ = queue!(stdout, style::SetForegroundColor(style::Color::Reset));
+        let _ = stdout.flush();
+        exit(0);
+    }).unwrap();
+
     // Create a vector to store MatrixChars
     let mut matrix_chars: Vec<MatrixChar> = vec![];
 
