@@ -31,6 +31,10 @@ path = "confique_demo/service_section/src/main.rs"
 name = "ps"
 path = "commands/ps/src/main.rs"
 
+[[bin]]
+name = "cmatrix"
+path = "commands/cmatrix/src/main.rs"
+
 [workspace]
 members = [
     "commands/*",
@@ -46,6 +50,9 @@ members = [
 ls = { path = "commands/ls" }
 cat = { path = "commands/cat" }
 ps = { path = "commands/ps" }
+
+# some fun commands
+cmatrix = { path = "commands/cmatrix" }
 
 # macro
 simple_config = { path = "macro/simple_config" }
@@ -67,3 +74,6 @@ confique = "0.2"
 serde = { version = "1.0", features = ["derive"] }
 winapi = { version = "0.3", features = ["consoleapi", "winbase", "wincon", "winnt", "winuser"] }
 sysinfo = "0.26.4"
+crossterm = "0.25.0"
+rand = "0.8.4"
+ctrlc = "3.1.7"

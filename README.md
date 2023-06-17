@@ -8,3 +8,6 @@ Rust实现Linux命令
 
 ## 2. Rust实现systemd配置文件解析的宏
 - [ ] [simple_config](./macro/simple_config/README.md)
+
+## 3. cmatrix
+- [ ] [cmatrix](./commands/cmatrix/README.md)
