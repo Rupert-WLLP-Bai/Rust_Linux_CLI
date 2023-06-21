@@ -12,6 +12,10 @@ name = "cat"
 path = "commands/cat/src/main.rs"
 
 [[bin]]
+name = "catr"
+path = "commands/catr/src/main.rs"
+
+[[bin]]
 name = "simple_config"
 path = "macro/simple_config/src/main.rs"
 
@@ -35,6 +39,7 @@ path = "commands/ps/src/main.rs"
 name = "cmatrix"
 path = "commands/cmatrix/src/main.rs"
 
+
 [workspace]
 members = [
     "commands/*",
@@ -50,6 +55,7 @@ members = [
 ls = { path = "commands/ls" }
 cat = { path = "commands/cat" }
 ps = { path = "commands/ps" }
+catr = { path = "commands/catr" }
 
 # some fun commands
 cmatrix = { path = "commands/cmatrix" }
