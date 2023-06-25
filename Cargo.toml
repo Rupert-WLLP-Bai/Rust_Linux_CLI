@@ -39,12 +39,17 @@ path = "commands/ps/src/main.rs"
 name = "cmatrix"
 path = "commands/cmatrix/src/main.rs"
 
+[[bin]]
+name = "runtime"
+path = "tokio/runtime/src/main.rs"
+
 
 [workspace]
 members = [
     "commands/*",
     "macro/*",
     "confique_demo/*",
+    "tokio/*"
 ]
 
 
@@ -68,6 +73,9 @@ unit_parser = { path = "macro/unit_parser" }
 basic = { path = "confique_demo/basic" }
 service_section = { path = "confique_demo/service_section" }
 
+# tokio
+runtime = { path = "tokio/runtime" }
+
 # dependencies
 clap = "3.2.22"
 nom = "7.1.1"
@@ -83,3 +91,8 @@ sysinfo = "0.26.4"
 crossterm = "0.25.0"
 rand = "0.8.4"
 ctrlc = "3.1.7"
+
+# tokio and async
+tokio = { version = "1.15.0", features = ["full"] }
+async-recursion = "1.0.0"
+futures = "0.3"
